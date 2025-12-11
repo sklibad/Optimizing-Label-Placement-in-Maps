@@ -5,8 +5,10 @@ from pyproj import CRS
 import geopandas as gpd
 from shapely.ops import unary_union
 
-settlements_path = "sidla.shp"
-collision_path = "Z_Voda_P.shp"
+# Input paths and parameters, prepared for github test data found at: https://github.com/sklibad/Optimizing-Label-Placement-in-Maps.git
+# Input raster can be found at: https://drive.google.com/drive/folders/1v9g0dRZQe2L0FOnolxGnVtuLZPssEGFU?usp=sharing
+settlements_path = "data/sidla.shp"
+collision_path = "data/Z_Voda_P.shp"
 raster_path = "ztm25_benesovsko.tif"
 output_path = "benesovsko_labels.shp"
 font_size = None
@@ -14,10 +16,12 @@ font_color_rgb = [0, 0, 0]
 M = 25000
 
 def main():
+    # Main function where input parameters are set and functions are called
     with rio_open(raster_path) as src:
         crs = CRS.from_user_input(src.crs)
 
     gdf_settlements = gpd.read_file(settlements_path).to_crs(crs)
+
     collision_gdf = unary_union(gpd.read_file(collision_path).to_crs(crs).geometry)
 
     offset_distance = 0.0005*M
@@ -30,7 +34,6 @@ def main():
     
     result_gdf = find_the_best_positions(contrast_raster, map_load_raster, final_labels)
     result_gdf = result_gdf[["dist", "dir_prio", "map_load", "contrast", "geometry"]]
-
     result_gdf.to_file(output_path)
 
 if __name__ == "__main__":
